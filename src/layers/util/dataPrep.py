@@ -12,8 +12,12 @@ def onHotEncode(lables, numClasses):
 def dataPrep_MNISTdigitClassification(X, Y, numClasses):
     
     # normalize data -> (0, 1)
-    X = X.astype('float32')
-    X = X(X / 255.0 - 0.1307) / 0.3081
+    X = X.astype('float32') / 255
+
+    # TODO: for some reason this doesnt work. The interpretor thinnks \
+    # im calling 'X'. Fix it layter
+    # X = X.astype('float32')
+    # X = X(X / 255.0 - 0.1307) / 0.3081
     
     X = X[:, np.newaxis, :, :] # (nData: smaples, nChannels: 1, Width: 28, Height: 28)
 
