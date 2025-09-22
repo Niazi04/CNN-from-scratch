@@ -50,7 +50,7 @@ class CNN:
                     _activatedOutShape =   self.activations[-1].shape
                 )
                 
-    def backprop(self, _output, _SGD=False, _verbose=True):
+    def backprop(self, _output, _SGD=False, _verbose=False):
         fcLayer: FullyConnected = self.layers[-1]
         deltaPool = fcLayer.backprop(self.activations[-2], _output, self.lr, _SGD)
 
