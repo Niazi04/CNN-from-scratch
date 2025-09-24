@@ -156,12 +156,6 @@ class CNN:
         convCounter = 1
         poolingCounter = 1
 
-        import sys
-        if 'ConvolutionLayer' not in sys.modules(): from .ConvolutionLayer import ConvolutionLayer
-        if 'FullyConnected'   not in sys.modules(): from .FullyConnected import FullyConnected
-        if 'MaxPooling'       not in sys.modules(): from .MaxPooling import MaxPooling
-
-
         for layer in self.layers:
             if isinstance(layer, ConvolutionLayer):
                 d[f"conv{convCounter}_config"]  = np.array([layer.mFilterCount, layer.mKernelSize, layer.mStride])
@@ -191,6 +185,13 @@ class CNN:
         model = np.load(filename)
         arcitecture = model["architecture"]
 
+
+        import sys
+        if 'ConvolutionLayer' not in sys.modules(): from .ConvolutionLayer import ConvolutionLayer
+        if 'FullyConnected'   not in sys.modules(): from .FullyConnected import FullyConnected
+        if 'MaxPooling'       not in sys.modules(): from .MaxPooling import MaxPooling
+
+        
         classInstance = cls()
 
         # Constrcut layers based on arcitecture
