@@ -77,7 +77,28 @@ class CNN:
                 print(f"Gradient norm: {gradNorm:.6f}")
                 if gradNorm < 1e-8:  # Vanishing gradients
                     print("⚠️  Vanishing gradients detected!")
+    def whatThisPic(self, _imArr):
+        '''
+            classifies the number in the photo
+            _imArr: flattened and nomrmalized image
+        '''
+        currecntActivaiton = _imArr
 
+        for layer in self.layers:
+            if isinstance(layer, ConvolutionLayer):
+                z = layer.feedforward(currecntActivaiton)
+                a = ActivationFunction.ReLU(z)
+
+            elif isinstance(layer, MaxPooling):
+                a = layer.poolMax(currecntActivaiton) 
+            elif isinstance(layer, FullyConnected):
+                z = layer.feedforward(currecntActivaiton)
+                a = ActivationFunction.softmax(z)
+            
+            currecntActivaiton = a
+        
+        return np.argmax(a)
+    
     def calculateLoss(self, _ypred, _ytrue):
         return np.mean((_ypred.flatten() - _ytrue) ** 2)
     
@@ -129,6 +150,82 @@ class CNN:
             avgLoss = epochLoss / (numberOfSamples // _batchSize)
                     
             print("epoch {}: loss={}, accuracy={:.5%}".format(epoch, avgLoss,accuracy))
+
+    def saveModel(self, filename):
+        d = {}
+        convCounter = 1
+        poolingCounter = 1
+
+        import sys
+        if 'ConvolutionLayer' not in sys.modules(): from .ConvolutionLayer import ConvolutionLayer
+        if 'FullyConnected'   not in sys.modules(): from .FullyConnected import FullyConnected
+        if 'MaxPooling'       not in sys.modules(): from .MaxPooling import MaxPooling
+
+
+        for layer in self.layers:
+            if isinstance(layer, ConvolutionLayer):
+                d[f"conv{convCounter}_config"]  = np.array([layer.mFilterCount, layer.mKernelSize, layer.mStride])
+                d[f"conv{convCounter}_weights"] = layer.mWeights
+                d[f"conv{convCounter}_biases"]  = layer.mBiases
+                convCounter += 1
+
+            if isinstance(layer, MaxPooling): 
+                d[f"pooling{poolingCounter}_config"] = np.array([layer.mPoolSize])
+                poolingCounter += 1
+                
+            if isinstance(layer, FullyConnected):
+                d["fc_config"]  = np.array([layer.mNout])
+                d["fc_weights"] = layer.mWeights
+                d["fc_biases"]  = layer.mBiases
+
+        np.savez(filename,
+                 architecture = np.array([type(x).__name__ for x in self.layers]),
+                 **d,
+                 allow_pickle=True
+                 )
+        
+    @classmethod
+    def loadModel(cls, filename):
+        # TODO #1: check if file exist
+        # TODO #2: hadle if file couldnt be loaded
+        model = np.load(filename)
+        arcitecture = model["architecture"]
+
+        classInstance = cls()
+
+        # Constrcut layers based on arcitecture
+        convCounter = 1
+        poolingCounter = 1
+        
+        for layer in arcitecture:
+            match layer:
+                case "ConvolutionLayer":
+                    config = model[f"conv{convCounter}_config"]
+                    convLayer = ConvolutionLayer(
+                        _kernelSize      = config[1],
+                        _stride          = config[2],
+                        _numberOfKernels = config[0],
+                        _weights         = model[f"conv{convCounter}_weights"],
+                        _Biases          = model[f"conv{convCounter}_biases"] 
+                    )
+                    classInstance.addLayer(convLayer)
+                    convCounter += 1
+                case "MaxPooling":
+                    config = model[f"pooling{poolingCounter}_config"]
+                    poolingLayer = MaxPooling(
+                        _poolSize = config[0]
+                    )
+                    classInstance.addLayer(poolingLayer)
+                    poolingCounter += 1
+                case "FullyConnected":
+                    config = model["fc_config"]
+                    fcLayer = FullyConnected(
+                        _numberOfOutputNodes = config[0],
+                        _weights             = model["fc_weights"],
+                        _biases              = model["fc_biases"]
+                    )
+                    classInstance.addLayer(fcLayer)
+        return classInstance
 
     def _debugForward(self, _layerINDX, _layerType, _inputShape, _outputShape, _activatedOutShape):
         print("="*4 + " " + "layer #{}".format(_layerINDX) + " " + "="*4)

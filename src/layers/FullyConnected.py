@@ -3,16 +3,24 @@ from .util.ActivationFunctions import ActivationFunction
 
 class FullyConnected:
 
-    def __init__(self, _numberOfOutputNodes, _verbose=False):
+    def __init__(self, _numberOfOutputNodes, _weights=None, _biases=None, _verbose=False):
         # expects the input to be flattened -> temp: flatten data in the method for now
         # #TODO: data format validation
-        self.mNin = None
-        self.mNout  = _numberOfOutputNodes
-        self.mBiases = np.zeros((_numberOfOutputNodes, 1))
-        self.mWeights = None
+        self.mNin            = None
+        self.mNout           = _numberOfOutputNodes
         self.nablaweightsAcc = None
         self.nablaBiasesAcc  = None
-        self.mIsLazyInit = False
+        self.mIsLazyInit     = False
+        self.isInitWithWeight= False
+
+        if _weights is not None and _biases is not None:
+            self.mBiases          = _biases
+            self.mWeights         = _weights
+            self.isInitWithWeight = True
+        else:
+            self.mBiases         = np.zeros((_numberOfOutputNodes, 1))
+            self.mWeights        = None
+
         if _verbose:
             self._debugConstructor()
 
@@ -24,7 +32,10 @@ class FullyConnected:
 
         if (self.mIsLazyInit == False):
             self.mNin = _input.shape[0]
-            self.mWeights = np.random.randn(self.mNout, self.mNin) * np.sqrt(2.0 / self.mNin) # Xavier initialization
+            if not self.isInitWithWeight:
+                # If model was not loaded, prepare weights and biases
+                self.mWeights = np.random.randn(self.mNout, self.mNin) * np.sqrt(2.0 / self.mNin) # Xavier initialization
+                self.isInitWithWeight = True
             self.mIsLazyInit = True
         z = np.dot(self.mWeights, _input.reshape(-1,1)) + self.mBiases 
         return z

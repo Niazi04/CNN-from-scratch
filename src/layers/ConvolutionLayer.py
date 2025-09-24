@@ -3,7 +3,7 @@ from scipy import signal
 from math import floor
 
 class ConvolutionLayer:
-    def __init__(self, _kernelSize, _stride, _numberOfKernels, _poolSize):
+    def __init__(self, _kernelSize, _stride, _numberOfKernels, _weights=None, _Biases=None):
         '''
             Using Lazy Initialization to construct the class.
             Input related shits like dimention and stuff will automatically be 
@@ -11,22 +11,26 @@ class ConvolutionLayer:
             This way, user can add multiple layers without bothering to feed
             the dimentions of previous output to the input of new layer
         '''
-        self.mPoolSize         = _poolSize
         self.mFilterCount      = _numberOfKernels   # number of kernels per convolution layer
         self.mKernelSize       = _kernelSize    
         self.mStride           = _stride
         self.mLazilyIntialized = False
+        self.mInitWithWeights  = False
 
         self.mInputShape       = None  # DxWxH
         self.mKernelDepth      = None 
         self.mOutputDimention  = None  #output diemntion WxH - not including the channels
         
         self.mOutputShape      = None  #output shape DxWxH
-        
-        self.mLastPoolMax      = None
-        self.mBiases           = None
-        self.mWeights          = None
         self.zpreactive        = None
+        
+        if _weights is not None and _Biases is not None:
+            self.mBiases           = _Biases
+            self.mWeights          = _weights
+            self.mInitWithWeights  = True
+        else:
+            self.mBiases           = None
+            self.mWeights          = None
 
         self.nablaweightsAcc   = None # accumulator for SGD
         self.nablaBiasesAcc    = None # accumulator for SGD
@@ -126,15 +130,19 @@ class ConvolutionLayer:
         self.mOutputShape      = (self.mFilterCount,
                                   self.mOutputDimention,
                                   self.mOutputDimention) #output shape DxWxH
-        self.mLastPoolMax      = np.zeros(self.mOutputShape)
-        self.mBiases           = np.zeros(self.mFilterCount)
-        self.mWeights          = np.random.randn(self.mFilterCount,
-                                                 self.mKernelDepth,
-                                                 self.mKernelSize,
-                                                 self.mKernelSize) * np.sqrt( 2.0 / (self. mKernelDepth *
-                                                                                   self. mKernelSize *
-                                                                                   self.mKernelSize)) # He initialization
         self.zpreactive        = np.zeros(self.mOutputShape)
+        
+        if not self.mInitWithWeights:
+            # If model is not loaded, prepare weights and biases
+
+            self.mBiases           = np.zeros(self.mFilterCount)
+            self.mWeights          = np.random.randn(self.mFilterCount,
+                                                    self.mKernelDepth,
+                                                    self.mKernelSize,
+                                                    self.mKernelSize) * np.sqrt( 2.0 / (self. mKernelDepth *
+                                                                                    self. mKernelSize *
+                                                                                    self.mKernelSize)) # He initialization
+            self.mInitWithWeights = True
         self.mLazilyIntialized = True
 
     def _debugBackProp(self, _nablaWeightsShape, _nablaBiasessShape, _deltaInputShape, _deltaConvShape):
