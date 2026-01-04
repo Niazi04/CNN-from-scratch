@@ -18,8 +18,18 @@ python install -r requiremenets.txt
 ```
 ## Training Your First Model
 
+
+Currently the code base and model creation is highly coupled. This will be fixed in future 
+updates.
+
+Follow the details to train your model in `trainYourFirstModel.py`
+The process is fully explained and limitations are mentioned
+
+
 ## Future Improvements
 
+
+- [ ] Decouple model creation and training loop (ASAP)
 - [ ] Decouple Loss Functions and Optimizers into their own classes
 - [ ] Fix pool size problem
 - [ ] Clean up random variable naming conventions
