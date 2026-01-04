@@ -17,3 +17,12 @@ Intall dependencies:
 python install -r requiremenets.txt
 ```
 ## Training Your First Model
+
+## Future Improvements
+
+- [ ] Decouple Loss Functions and Optimizers into their own classes
+- [ ] Fix pool size problem
+- [ ] Clean up random variable naming conventions
+- [ ] Add different related optimizers
+- [ ] Add different related Loss Functions
+- [ ] Implement batch normalizer (similar to DataLoader in Pytorch)
