@@ -1,6 +1,6 @@
-from .ConvolutionLayer import ConvolutionLayer
-from .FullyConnected import FullyConnected
-from .MaxPooling import MaxPooling
+from .layers.ConvolutionLayer import ConvolutionLayer
+from .layers.FullyConnected import FullyConnected
+from .layers.MaxPooling import MaxPooling
 from .util.ActivationFunctions import ActivationFunction
 import numpy as np
 
@@ -187,9 +187,9 @@ class CNN:
 
 
         import sys
-        if 'ConvolutionLayer' not in sys.modules(): from .ConvolutionLayer import ConvolutionLayer
-        if 'FullyConnected'   not in sys.modules(): from .FullyConnected import FullyConnected
-        if 'MaxPooling'       not in sys.modules(): from .MaxPooling import MaxPooling
+        if 'ConvolutionLayer' not in sys.modules(): from .layers.ConvolutionLayer import ConvolutionLayer
+        if 'FullyConnected'   not in sys.modules(): from .layers.FullyConnected import FullyConnected
+        if 'MaxPooling'       not in sys.modules(): from .layers.MaxPooling import MaxPooling
 
         
         classInstance = cls()

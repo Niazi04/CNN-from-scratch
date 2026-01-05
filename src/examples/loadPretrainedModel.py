@@ -1,7 +1,7 @@
-from src.layers.CNN import CNN
+from src.CNN.CNN import CNN
 import matplotlib.pyplot as plt
 from tensorflow import keras
-from src.layers.util import dataPrep
+from src.CNN.util import dataPrep
 
 (_xjunk, _yjunk), (X_TEST, Y_TEST) = keras.datasets.mnist.load_data()
 

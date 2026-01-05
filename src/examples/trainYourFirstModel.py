@@ -3,11 +3,13 @@
 
 
 from tensorflow import keras
-from src.layers.util import dataPrep
-from src.layers.CNN import CNN
-from src.layers.ConvolutionLayer import ConvolutionLayer
-from src.layers.FullyConnected import FullyConnected
-from src.layers.MaxPooling import MaxPooling
+from src.CNN.util import dataPrep
+from src.CNN.CNN import CNN
+from src.CNN.layers.ConvolutionLayer import ConvolutionLayer
+from src.CNN.layers.FullyConnected import FullyConnected
+from src.CNN.layers.MaxPooling import MaxPooling
+from src.CNN.modules.loss import crossEntropyLoss
+import numpy as np
 
 
 # ======== Set up Environment ======== #
@@ -87,9 +89,49 @@ cnn.addLayer(lfc)
 
 
 # ======== traing the network ======== #
-cnn.trainSGD(6, 128, 0.04, X, Y)    
+EPOCH = 6
+BATCH_SIZE = 128
+LR = 0.04
 
+def trainSGD(_epochs, _batchSize, _learningRate, _xtrain, _ytrain):
+        numberOfSamples = len(_xtrain)
 
+        indicies = np.arange(numberOfSamples)
+
+        criterian = crossEntropyLoss(reduction=None)
+
+        for epoch in range(_epochs):
+            epochLoss = 0
+            correctPrediction = 0
+
+            np.random.shuffle(indicies)
+            xtrainShuffled = _xtrain[indicies]
+            ytrainShuffled = _ytrain[indicies]
+
+            for i in range(0, numberOfSamples, _batchSize):
+                batchLoss = 0
+                batchCorrect = 0
+                batchSize = min(_batchSize, numberOfSamples - i)
+
+                for j in range(i, i+ batchSize):
+                    cnn.forward(xtrainShuffled[j])
+                    batchCorrect += cnn.compute_accuracy(cnn.activations[-1].reshape(1,-1), ytrainShuffled[j].reshape(1,-1))
+                    batchLoss += criterian(cnn.activations[-1], ytrainShuffled[j]) #loss
+                    cnn.backprop(ytrainShuffled[j].reshape(-1,1), _SGD=True)
+                
+                for layer in cnn.layers:
+                    if hasattr(layer, 'updateParam'):
+                        layer.updateParam(_learningRate, batchSize)
+            
+                epochLoss += batchLoss / batchSize
+                correctPrediction += batchCorrect
+            
+            accuracy = correctPrediction / numberOfSamples
+            avgLoss = epochLoss / (numberOfSamples // _batchSize)
+                    
+            print("epoch {}: loss={}, accuracy={:.5%}".format(epoch, avgLoss,accuracy))
+
+trainSGD(EPOCH, BATCH_SIZE, LR, X, Y)
 
 # If done correctly, you will get an output like this:
 # NOTE: ignore any "Extreme Softmax Value". It will be fixed in later patches \
@@ -121,4 +163,4 @@ cnn.trainSGD(6, 128, 0.04, X, Y)
 #    ./CNN-FROM-SCRATCH/
 
 MODEL_NAME = "LookMyFirstModel"
-cnn.saveModel(MODEL_NAME)
+# cnn.saveModel(MODEL_NAME)

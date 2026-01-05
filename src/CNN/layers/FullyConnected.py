@@ -1,5 +1,5 @@
 import numpy as np
-from .util.ActivationFunctions import ActivationFunction
+from ..util.ActivationFunctions import ActivationFunction
 
 class FullyConnected:
 
