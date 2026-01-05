@@ -18,9 +18,37 @@ python install -r requiremenets.txt
 ```
 ## Training Your First Model
 
+For your fist model, we will use the classic MNIST Handwritten digit dataset. We use keras to import the data. Feel free to use whatever method u like.
 
-Currently the code base and model creation is highly coupled. This will be fixed in future 
-updates.
+1. Import all the necessary components
+
+```python
+from tensorflow import keras
+from src.CNN.util import dataPrep
+from src.CNN.CNN import CNN
+from src.CNN.layers.ConvolutionLayer import ConvolutionLayer
+from src.CNN.layers.FullyConnected import FullyConnected
+from src.CNN.layers.MaxPooling import MaxPooling
+from src.CNN.modules.loss import crossEntropyLoss
+import numpy as np
+```
+
+2. Import the dataset
+This system only uses CPU and NO cuda. That means its super slow so we only use a small smaple of the dataset to make it fast for a demo
+
+```python
+SAMPLES_RANGE = 1000
+
+(X_TRAIN, Y_TRAIN), (X_TEST, Y_TEST) = keras.datasets.mnist.load_data()
+
+X, Y = dataPrep.dataPrep_MNISTdigitClassification( X_TRAIN[:SAMPLES_RANGE],
+                                                   Y_TRAIN[:SAMPLES_RANGE],
+                                                   10
+                                                  )
+```
+
+3. Create your model
+
 
 Follow the details to train your model in `trainYourFirstModel.py`
 The process is fully explained and limitations are mentioned
