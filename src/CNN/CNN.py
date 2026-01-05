@@ -99,57 +99,11 @@ class CNN:
         
         return np.argmax(a)
     
-    def calculateLoss(self, _ypred, _ytrue):
-        return np.mean((_ypred.flatten() - _ytrue) ** 2)
-    
-    def crossEntropy(self, _yPred, _yTrue):
-        _yPred = np.clip(_yPred.flatten(), 1e-10, 1 - 1e-10)
-        _yTrue = _yTrue.flatten()
-        return -np.sum(_yTrue * np.log(_yPred))  # add eps for stability
-
-    
     def compute_accuracy(self, _ypred, _ytrue):
         predictions = np.argmax(_ypred, axis=1)
         labels = np.argmax(_ytrue, axis=1)
         return np.mean(predictions==labels)
     
-    def trainSGD(self, _epochs, _batchSize, _learningRate, _xtrain, _ytrain, _verbose=False):
-        self.lr = _learningRate
-        numberOfSamples = len(_xtrain)
-
-        indicies = np.arange(numberOfSamples)
-
-
-        for epoch in range(_epochs):
-            epochLoss = 0
-            correctPrediction = 0
-
-            np.random.shuffle(indicies)
-            xtrainShuffled = _xtrain[indicies]
-            ytrainShuffled = _ytrain[indicies]
-
-            for i in range(0, numberOfSamples, _batchSize):
-                batchLoss = 0
-                batchCorrect = 0
-                batchSize = min(_batchSize, numberOfSamples - i)
-
-                for j in range(i, i+ batchSize):
-                    self.forward(xtrainShuffled[j])
-                    batchCorrect += self.compute_accuracy(self.activations[-1].reshape(1,-1), ytrainShuffled[j].reshape(1,-1))
-                    batchLoss += self.crossEntropy(self.activations[-1], ytrainShuffled[j]) #loss
-                    self.backprop(ytrainShuffled[j].reshape(-1,1), _SGD=True)
-                
-                for layer in self.layers:
-                    if hasattr(layer, 'updateParam'):
-                        layer.updateParam(_learningRate, batchSize)
-            
-                epochLoss += batchLoss / batchSize
-                correctPrediction += batchCorrect
-            
-            accuracy = correctPrediction / numberOfSamples
-            avgLoss = epochLoss / (numberOfSamples // _batchSize)
-                    
-            print("epoch {}: loss={}, accuracy={:.5%}".format(epoch, avgLoss,accuracy))
 
     def saveModel(self, filename):
         d = {}
